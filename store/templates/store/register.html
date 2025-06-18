@@ -1,0 +1,33 @@
+{% extends 'store/main.html' %}
+
+{% load widget_tweaks %}  {# for nicer form styling #}
+
+{% block content %}
+<div class="auth-container" style="max-width: 400px; margin: 30px auto; padding: 20px; background: #1e1e1e; border-radius: 10px; color: #f1f1f1;">
+  <h2 style="text-align: center; margin-bottom: 20px;">Register</h2>
+
+  <form method="post" action="{% url 'store:register' %}">
+    {% csrf_token %}
+    
+    {% for field in form %}
+      <div class="form-group" style="margin-bottom: 15px;">
+        <label for="{{ field.id_for_label }}" style="display: block; margin-bottom: 5px;">{{ field.label }}</label>
+        {% render_field field class="form-control" style="width: 100%; padding: 8px; border-radius: 5px; border: none;" %}
+        {% if field.errors %}
+          <div style="color: #e74c3c; margin-top: 5px;">
+            {{ field.errors|striptags }}
+          </div>
+        {% endif %}
+      </div>
+    {% endfor %}
+    
+    <button type="submit" style="width: 100%; padding: 10px; background-color: #28a745; color: white; font-weight: 600; border: none; border-radius: 8px; cursor: pointer;">
+      Register
+    </button>
+  </form>
+
+  <p style="margin-top: 15px; text-align: center;">
+    Already have an account? <a href="{% url 'store:login' %}" style="color: #28a745;">Login here</a>
+  </p>
+</div>
+{% endblock %}

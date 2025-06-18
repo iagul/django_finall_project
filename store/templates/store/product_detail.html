@@ -1,0 +1,131 @@
+{% extends 'store/main.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+  /* Your existing styles unchanged */
+  .product-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+    margin-bottom: 2rem;
+    align-items: flex-start;
+  }
+  .product-image {
+    flex: 1;
+    max-width: 400px;
+  }
+  .product-image img {
+    width: 100%;
+    height: auto;
+    border-radius: 10px;
+  }
+  .product-details {
+    flex: 2;
+    font-family: Arial, sans-serif;
+    color: #333;
+  }
+  .product-details h2 {
+    background-color: #28a745;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    font-weight: bold;
+    font-size: 2rem;
+    margin-bottom: 1rem;
+  }
+  .product-details p {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin: 0.4rem 0;
+  }
+  .product-buttons {
+    margin-top: 2rem;
+  }
+  .product-buttons .btn {
+    margin-right: 10px;
+  }
+  .review-section {
+    margin-top: 3rem;
+    border-top: 1px solid #ccc;
+    padding-top: 1.5rem;
+  }
+  .review-section h4 {
+    font-weight: bold;
+    margin-bottom: 1rem;
+  }
+  .review {
+    margin-bottom: 1.5rem;
+  }
+  .review .rating {
+    color: gold;
+  }
+</style>
+
+<div class="product-container">
+  <div class="product-image">
+    {% if product.imageURL %}
+      <img src="{{ product.imageURL }}" alt="{{ product.name }}">
+    {% else %}
+      <img src="{% static 'store/img/placeholder.png' %}" alt="No image available">
+    {% endif %}
+  </div>
+
+  <div class="product-details">
+    <h2>{{ product.name }}</h2>
+    <p><strong>Price:</strong> ${{ product.price|floatformat:2 }}</p>
+    <p><strong>Description:</strong> {{ product.description|default:"No description available." }}</p>
+    <p><strong>Category:</strong> {{ product.category.name }}</p>
+    <p><strong>Rating:</strong> {{ product.rating|default:"N/A" }}/5</p>
+
+    {% if user.is_authenticated %}
+      <button
+        class="btn btn-primary add-to-cart-btn"
+        data-product-id="{{ product.id }}"
+        data-product-name="{{ product.name }}"
+        data-product-image="{% if product.imageURL %}{{ product.imageURL }}{% else %}{% static 'store/img/placeholder.png' %}{% endif %}">
+        Add to Cart
+      </button>
+    {% else %}
+      <a href="{% url 'store:login' %}?next={{ request.path }}" class="btn btn-primary">Login to Add to Cart</a>
+    {% endif %}
+
+    <div class="product-buttons">
+      <a href="{% url 'store:store' %}" class="btn btn-secondary">Return</a>
+      <a href="{% url 'store:cart' %}" class="btn btn-success">Checkout</a>
+    </div>
+  </div>
+</div>
+
+<div class="review-section">
+  <h4>Leave a Review</h4>
+  {% if user.is_authenticated %}
+    <form method="POST" action="{% url 'store:submit_review' product.id %}">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit" class="btn btn-success btn-sm">Submit Review</button>
+    </form>
+  {% else %}
+    <p><a href="{% url 'store:login' %}?next={{ request.path }}">Login</a> to leave a review.</p>
+  {% endif %}
+
+  <hr>
+
+  <h4>Customer Reviews</h4>
+  {% if product.reviews.all.count %}
+    {% for review in product.reviews.all %}
+      <div class="review">
+        <p><strong>{{ review.customer.name }}</strong> - {{ review.date_added|date:"M d, Y" }}</p>
+        <p class="rating">Rating: {{ review.rating }} / 5</p>
+        <p>{{ review.comment }}</p>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p>No reviews yet. Be the first to review!</p>
+  {% endif %}
+</div>
+
+{% if user.is_authenticated %}
+<script src="{% static 'store/js/main.js' %}"></script>
+{% endif %}
+{% endblock %}
